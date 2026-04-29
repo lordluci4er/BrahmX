@@ -1,9 +1,11 @@
 from datetime import datetime
-from utils import get_time_greeting, clean_text
-from math_handler import solve_math
-from search import multi_source_answer
-from memory import get_user_context
-from nlp_engine import correct_text
+
+# ✅ CORRECT IMPORTS (VERY IMPORTANT)
+from app.services.utils import get_time_greeting, clean_text
+from app.services.math_handler import solve_math
+from app.services.search import multi_source_answer
+from app.services.memory import get_user_context
+from app.services.nlp_engine import correct_text
 
 
 # -------- CONTEXT RESOLUTION --------
@@ -13,7 +15,7 @@ def resolve_context(user_input, context):
     follow_words = ["it", "this", "that", "they", "he", "she"]
 
     if any(word in user_clean.split() for word in follow_words):
-        if context["last_query"]:
+        if context.get("last_query"):
             return context["last_query"] + " " + user_input
 
     return user_input
@@ -97,10 +99,10 @@ def chatbot_response(user_input, user_id="default"):
     return smart_fallback(user_input)
 
 
-# -------- STREAMING RESPONSE (FINAL FIX) --------
+# -------- STREAMING RESPONSE --------
 def chatbot_stream_response(user_input, user_id="default"):
     full_response = chatbot_response(user_input, user_id)
 
-    # ✅ FIXED: character streaming
+    # ✅ CHARACTER STREAMING (SMOOTH)
     for char in full_response:
         yield char

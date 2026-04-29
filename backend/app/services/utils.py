@@ -1,11 +1,21 @@
 import re
 from datetime import datetime
+from typing import List, Dict
+
 
 # -------- CLEAN TEXT --------
-def clean_text(text):
+def clean_text(text: str) -> str:
+    if not text:
+        return ""
+
     text = text.lower()
+
+    # remove special characters
     text = re.sub(r"[^\w\s]", " ", text)
+
+    # normalize spaces
     text = re.sub(r"\s+", " ", text)
+
     return text.strip()
 
 
@@ -22,18 +32,23 @@ STOPWORDS = {
 
 
 # -------- SIMPLE STEMMER --------
-def simple_stem(word):
-    # basic suffix removal (lightweight)
+def simple_stem(word: str) -> str:
     suffixes = ["ing", "ed", "ly", "es", "s"]
+
     for suf in suffixes:
         if word.endswith(suf) and len(word) > len(suf) + 2:
             return word[:-len(suf)]
+
     return word
 
 
 # -------- KEYWORD EXTRACTION --------
-def extract_keywords(text):
+def extract_keywords(text: str) -> List[str]:
     text = clean_text(text)
+
+    if not text:
+        return []
+
     words = text.split()
 
     keywords = []
@@ -43,9 +58,10 @@ def extract_keywords(text):
             stemmed = simple_stem(word)
             keywords.append(stemmed)
 
-    # remove duplicates but keep order
+    # remove duplicates (preserve order)
     seen = set()
     unique_keywords = []
+
     for w in keywords:
         if w not in seen:
             unique_keywords.append(w)
@@ -54,20 +70,41 @@ def extract_keywords(text):
     return unique_keywords
 
 
-# -------- BONUS: IMPORTANT WORD BOOST --------
-def get_weighted_keywords(text):
+# -------- WEIGHTED KEYWORDS --------
+def get_weighted_keywords(text: str) -> Dict[str, int]:
     keywords = extract_keywords(text)
 
     weights = {}
+
     for word in keywords:
         weights[word] = weights.get(word, 0) + 1
 
     return weights
 
 
+# -------- TEXT NORMALIZER (NEW - VERY USEFUL) --------
+def normalize_text(text: str) -> str:
+    """
+    Clean + lightweight normalization
+    (used before NLP / search)
+    """
+    text = clean_text(text)
+
+    # collapse repeated words (e.g. "ai ai ai")
+    words = text.split()
+    unique_words = []
+
+    for w in words:
+        if not unique_words or unique_words[-1] != w:
+            unique_words.append(w)
+
+    return " ".join(unique_words)
+
+
 # -------- TIME GREETING --------
-def get_time_greeting():
+def get_time_greeting() -> str:
     hour = datetime.now().hour
+
     if 5 <= hour < 12:
         return "Good morning!"
     elif 12 <= hour < 17:
